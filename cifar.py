@@ -5,7 +5,7 @@ import data_helpers # Helper functions to fetch CIFAR data
 
 #Helper functions
 def weights_initialize(shape):
-    initial = tf.truncate_normal(shape,stddev = 0.1)
+    initial = tf.truncated_normal(shape,stddev = 0.1)
     return tf.Variable(initial)
 
 def bias_initialize(shape):
@@ -19,7 +19,7 @@ image = tf.placeholder(tf.float32,[None,3072])
 label = tf.placeholder(tf.int32,[None])
 
 # Re-shape the images
-image_reshape = image.reshape(images,[-1,32,32,3])
+image_reshape = tf.reshape(image,[-1,32,32,3])
 
 # 1st convolutional layer
 Wconv1 = weights_initialize([5,5,3,64])
@@ -41,4 +41,9 @@ norm2  = tf.nn.lrn(layer_2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 # Pooling
 pool2 = tf.nn.max_pool(norm2,ksize = [1,2,2,1], strides = [1,2,2,1], padding= 'SAME')
 
+init = tf.global_variables_initializer()
+
+sess = tf.Session()
+
+sess.run(init);
 
