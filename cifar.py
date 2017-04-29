@@ -3,7 +3,7 @@ import tensorflow as tf
 import data_helpers # Helper functions to fetch CIFAR data
 
 # Some defines
-MAX_STEPS = 100*1000 # 100k epochs
+MAX_STEPS = 50*1000 # 100k epochs
 BATCH_SIZE = 300
 NUM_EPOCHS_PER_DECAY = 350.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
@@ -140,5 +140,6 @@ for i in range(MAX_STEPS):
     if i%100 == 0:
         train_accuracy = sess.run(accuracy,feed_dict = {image:images_batch,labels:labels_batch})
         print ('Step {:5d}: training accuracy {:g}'.format(i, train_accuracy))
-
-
+# Testing
+test_accuracy = sess.run(accuracy, feed_dict={ images: data_sets['images_test'],labels: data_sets['labels_test']})
+print('Test accuracy {:g}'.format(test_accuracy))
