@@ -77,7 +77,7 @@ loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=lab
 
 # Training step computation
 global_step = tf.Variable(0, trainable=False)
-learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,NUM_EPOCHS_PER_DECAY,LEARNING_RATE_DECAY_FACTOR,staircase = True)
+learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(BATCH_SIZE*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
 train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
 
 # Evaluating the training
