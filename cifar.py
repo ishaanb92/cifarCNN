@@ -4,7 +4,7 @@ import data_helpers # Helper functions to fetch CIFAR data
 
 # Some defines
 MAX_STEPS = 125*1000 # 75k epochs
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 NUM_EPOCHS_PER_DECAY = 350.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
 INITIAL_LEARNING_RATE = 0.01
