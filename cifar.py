@@ -3,11 +3,11 @@ import tensorflow as tf
 import data_helpers # Helper functions to fetch CIFAR data
 
 # Some defines
-MAX_STEPS = 75*1000 # 75k epochs
-BATCH_SIZE = 300
+MAX_STEPS = 125*1000 # 75k epochs
+BATCH_SIZE = 256
 NUM_EPOCHS_PER_DECAY = 350.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.001
+INITIAL_LEARNING_RATE = 0.01
 
 #Helper functions
 def weights_initialize(shape,dev):
@@ -73,7 +73,9 @@ b_out = bias_initialize([10])
 out = tf.add(tf.matmul(fc_2, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
 
 # Cost Model
-loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=out))
+regularizer = tf.nn.l2_loss(W_fc2) + tf.nn.l2_loss(W_fc1) + tf.nn.l2_loss(Wconv2) + tf.nn.l2_loss(Wconv1)
+lmbda = tf.constant(0.1) # Determines rate of weight decay
+loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=out) + lmbda*regularizer)
 
 # Training step computation
 global_step = tf.Variable(0, trainable=False)
