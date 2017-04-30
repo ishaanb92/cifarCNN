@@ -6,4 +6,4 @@ The base architecture for the classifier is based on the CIFAR-10 classifier pre
 
 TODOS:
 1. Make code modular, clear distinction between training and evaluation
-2. Use a GAN to augment training data 
+2. Use a adversarial inputs to augment training data 
