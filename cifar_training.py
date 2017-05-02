@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import cifar # Contains inference(),loss(),training()
 import data_helpers # Helper functions to fetch CIFAR data
+import os
 
 MAX_STEPS = 125*1000 # 75k epochs
 BATCH_SIZE = 128
@@ -30,8 +31,6 @@ def run_training():
         image = tf.placeholder(tf.float32,[None,3072])
         label = tf.placeholder(tf.int64,[None])
 
-        # Create a "saver" to save weights and biases
-        saver = tf.train.Saver()
 
         # Construct the graph
         out,regularizer = cifar.inference(image)
@@ -47,6 +46,11 @@ def run_training():
 
         # Now that all the ops are defined, run the training
         init = tf.global_variables_initializer()
+
+        # Create a "saver" to save weights and biases
+        saver = tf.train.Saver()
+
+        # Create session
         sess = tf.Session()
         sess.run(init)
 
@@ -62,7 +66,8 @@ def run_training():
                 print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
             if i == MAX_STEPS-1:
                 # Now that training is complete, save the checkpoint file
-                saver.save(sess,"model.cpkt",global_step = i)
+                file_path = os.path.join(os.get_cwd(),"model.cpkt")
+                saver.save(sess,file_path,global_step = i)
 
 
 
