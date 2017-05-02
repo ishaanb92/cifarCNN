@@ -30,6 +30,9 @@ def run_training():
         image = tf.placeholder(tf.float32,[None,3072])
         label = tf.placeholder(tf.int64,[None])
 
+        # Create a "saver" to save weights and biases
+        saver = tf.train.Saver()
+
         # Construct the graph
         out,regularizer = cifar.inference(image)
 
@@ -57,6 +60,11 @@ def run_training():
             if i%100 == 0:
                 train_accuracy = evaluate_batch(sess,accuracy,images_batch,label_batch,image,label)
                 print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
+            if i == MAX_STEPS-1:
+                # Now that training is complete, save the checkpoint file
+                saver.save(sess,"model.cpkt",global_step = i)
+
+
 
 def main(_):
     run_training()
