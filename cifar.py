@@ -76,8 +76,8 @@ def create_train_step(loss):
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
     return train_step
 
-def evaluate_training(out,labels):
-    correct_prediction = tf.equal(tf.argmax(out, 1), labels)
+def evaluate(out,labels):
+    correct_prediction = tf.nn.in_top_k(out,labels,1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
     return accuracy
 

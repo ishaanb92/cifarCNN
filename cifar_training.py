@@ -42,7 +42,7 @@ def run_training():
         train_step = cifar.create_train_step(loss)
 
         # Add op for evaluating training accuracy
-        accuracy = cifar.evaluate_training(out,label)
+        accuracy = cifar.evaluate(out,label)
 
         # Now that all the ops are defined, run the training
         init = tf.global_variables_initializer()
@@ -66,7 +66,7 @@ def run_training():
                 print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
             if i == MAX_STEPS-1:
                 # Now that training is complete, save the checkpoint file
-                file_path = os.path.join(os.get_cwd(),"model.cpkt")
+                file_path = os.path.join(os.getcwd(),"model.cpkt")
                 saver.save(sess,file_path,global_step = i)
 
 

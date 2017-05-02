@@ -5,5 +5,5 @@ The code to pre-process the CIFAR-10 data-set (unpickle and load) has been forke
 The base architecture for the classifier is based on the CIFAR-10 classifier present in the TensorFlow tutorials, just more amenable to change. For the original code (much more polished), please refer : https://github.com/tensorflow/models/tree/master/tutorials/image/cifar10. In the original TF code, training images are distorted using random crops and other techniques. Input images in this code are not manipulated before training.
 
 TODOS:
-1. Use a adversarial inputs to augment training data
-2. Add code to evaluate test data
+1. Use adversarial inputs to augment training data 
+2. Explore other methods in literature
