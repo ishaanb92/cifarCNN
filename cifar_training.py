@@ -8,6 +8,11 @@ MAX_STEPS = 125*1000
 BATCH_SIZE = 128
 
 def generate_batch(dataset_images,dataset_labels):
+    # Inputs:
+        # dataset_images : Entire image collection from train/test
+        # dataset_labels : Entire label collection from train/test
+    # Returns:
+        # Image and Label  array built from random indices from provided dataset
     batch = np.random.choice(dataset_images.shape[0], BATCH_SIZE)
     images_batch = dataset_images[batch]
     label_batch = dataset_labels[batch]

@@ -4,7 +4,7 @@ import tensorflow as tf
 # Some defines
 NUM_EPOCHS_PER_DECAY = 350.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.1
+INITIAL_LEARNING_RATE = 0.01
 BATCH_SIZE = 128
 
 #Helper functions
