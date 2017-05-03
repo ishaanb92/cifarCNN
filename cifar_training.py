@@ -23,10 +23,10 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch
         # sess : Current session
         # accuracy : op defined for computing the accuracy
         # cifar_dataset : Dataset containing all images
-        # images_batch : Tensor containing images in the current batch
-        # label_batch : Tensor containing label in the current batch
         # image_pl : Placeholder tensor for images
         # label_pl : Placeholder tensor for label
+        # steps_per_epoch : Number of steps per epoch
+        # training : Flag, True when evaluating training examples
     # Returns:
         # prediction : fraction of correctly predicated labels
 
@@ -84,9 +84,9 @@ def run_training():
         sess = tf.Session()
         sess.run(init)
 
-        steps_per_epoch_train = cifar_dataset['images_train'].shape[0]/BATCH_SIZE
-        steps_per_epoch_test = cifar_dataset['images_test'].shape[0]/BATCH_SIZE
-        num_epochs = MAX_STEPS/steps_per_epoch_train
+        steps_per_epoch_train = cifar_dataset['images_train'].shape[0]/BATCH_SIZE # Train ops run per training epoch
+        steps_per_epoch_test = cifar_dataset['images_test'].shape[0]/BATCH_SIZE # Number of evaluations per epoch for test examples
+        num_epochs = MAX_STEPS/steps_per_epoch_train # Number of training epochs
 
         for i in range(num_epochs):
             # Generate batch

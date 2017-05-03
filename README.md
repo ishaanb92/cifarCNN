@@ -7,3 +7,4 @@ The base architecture for the classifier is based on the CIFAR-10 classifier pre
 TODOS:
 1. Use adversarial inputs to augment training data 
 2. Explore other methods in literature
+3. Add visualizations
