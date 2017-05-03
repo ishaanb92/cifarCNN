@@ -67,6 +67,7 @@ def inference(image):
 def loss(out,regularizer,labels):
     lmbda = tf.constant(0.1) # Determines rate of weight decay
     loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=out) + lmbda*regularizer)
+    tf.summary.scalar('Training Loss',loss)
     return loss
 
 # Training step computation
@@ -79,5 +80,6 @@ def create_train_step(loss,global_step,num_examples):
 def evaluate(out,labels):
     correct_prediction = tf.nn.in_top_k(out,labels,1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
+    tf.summary.scalar('Correct Predications',accuracy)
     return accuracy
 
