@@ -96,9 +96,9 @@ def run_training():
                 sess.run(train_step,feed_dict = {image:images_batch,label:label_batch})
             # Check accuracy every epoch
             train_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_train,training = True) #evaluate model with training data
-            print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
+            print('Epoch '+str(i)+' training accuracy: '+str(train_accuracy))
             test_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_test,training = False) #evaluate model with test data
-            print('Iteration '+str(i)+' test accuracy: '+str(test_accuracy))
+            print('Epoch '+str(i)+' test accuracy: '+str(test_accuracy))
 
         # Now that training is complete, save the checkpoint file
         file_path = os.path.join(os.getcwd(),"model.cpkt")
