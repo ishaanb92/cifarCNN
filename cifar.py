@@ -4,7 +4,7 @@ import tensorflow as tf
 # Some defines
 NUM_EPOCHS_PER_DECAY = 350.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.01
+INITIAL_LEARNING_RATE = 0.1
 BATCH_SIZE = 128
 
 #Helper functions
@@ -70,9 +70,9 @@ def loss(out,regularizer,labels):
     return loss
 
 # Training step computation
-def create_train_step(loss):
-    global_step = tf.Variable(0, trainable=False)
-    learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(BATCH_SIZE*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
+def create_train_step(loss,global_step,num_examples):
+    num_batches_per_epoch = num_examples/BATCH_SIZE
+    learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
     return train_step
 

@@ -13,7 +13,7 @@ def generate_batch(dataset_images,dataset_labels):
     label_batch = dataset_labels[batch]
     return images_batch,label_batch
 
-def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,training):
+def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch,training):
     # Inputs:
         # sess : Current session
         # accuracy : op defined for computing the accuracy
@@ -31,26 +31,31 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,training):
     else:
         dataset_images = cifar_dataset['images_test']
         dataset_labels = cifar_dataset['labels_test']
+    true_count = 0
 
     num_examples = dataset_images.shape[0]
-    steps_per_epoch = num_examples/BATCH_SIZE
-    true_count = 0
+
     for x in range(steps_per_epoch):
         # Generate batch
         images_batch,label_batch = generate_batch(dataset_images,dataset_labels)
         true_count += sess.run(accuracy,feed_dict = {image_pl: images_batch,label_pl:label_batch})
-    prediction = float(true_count)/num_examples
-    print 'Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count,prediction)
+    prediction = (float(true_count)/steps_per_epoch) # Avg fraction of correct images
+    if training:
+        print 'TRAINING EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*BATCH_SIZE,prediction)
+    else:
+        print 'TEST EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*BATCH_SIZE,prediction)
     return prediction
 
 # Top level training function
 def run_training():
 
     with tf.Graph().as_default():
+
         cifar_dataset = data_helpers.load_data() # Loads training images/label + test images/label
         image = tf.placeholder(tf.float32,[None,3072])
         label = tf.placeholder(tf.int64,[None])
 
+        global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Construct the graph
         out,regularizer = cifar.inference(image)
@@ -59,7 +64,7 @@ def run_training():
         loss = cifar.loss(out,regularizer,label)
 
         # Add op for optimization for each training step
-        train_step = cifar.create_train_step(loss)
+        train_step = cifar.create_train_step(loss,global_step,cifar_dataset['images_train'].shape[0])
 
         # Add op for evaluating training accuracy
         accuracy = cifar.evaluate(out,label)
@@ -74,20 +79,24 @@ def run_training():
         sess = tf.Session()
         sess.run(init)
 
-        for i in range(MAX_STEPS):
+        steps_per_epoch = cifar_dataset['images_train'].shape[0]/BATCH_SIZE
+        num_epochs = MAX_STEPS/steps_per_epoch
+
+        for i in range(num_epochs):
             # Generate batch
-            images_batch,label_batch = generate_batch(cifar_dataset['images_train'],cifar_dataset['labels_train'])
-            # Execute the train step
-            sess.run(train_step,feed_dict = {image:images_batch,label:label_batch})
-            if i%1000 == 0:
-                train_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,training = True) #evaluate model with training data
-                print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
-                test_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,training = False) #evaluate model with test data
-                print('Iteration '+str(i)+' test accuracy: '+str(test_accuracy))
-            if i == MAX_STEPS-1:
-                # Now that training is complete, save the checkpoint file
-                file_path = os.path.join(os.getcwd(),"model.cpkt")
-                saver.save(sess,file_path,global_step = i)
+            for j in range(steps_per_epoch):
+                images_batch,label_batch = generate_batch(cifar_dataset['images_train'],cifar_dataset['labels_train'])
+                # Execute the train step
+                sess.run(train_step,feed_dict = {image:images_batch,label:label_batch})
+            # Check accuracy every epoch
+            train_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch,training = True) #evaluate model with training data
+            print('Iteration '+str(i)+' training accuracy: '+str(train_accuracy))
+            test_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch,training = False) #evaluate model with test data
+            print('Iteration '+str(i)+' test accuracy: '+str(test_accuracy))
+
+        # Now that training is complete, save the checkpoint file
+        file_path = os.path.join(os.getcwd(),"model.cpkt")
+        saver.save(sess,file_path,global_step = i)
 
 
 
