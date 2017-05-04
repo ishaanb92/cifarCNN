@@ -3,20 +3,19 @@ import numpy as np
 import cifar # Contains inference(),loss(),training()
 import data_helpers # Helper functions to fetch CIFAR data
 import os
-import subprocess
-import shlex
+import glob
+import shutil
 
 MAX_STEPS = 125*1000
 BATCH_SIZE = 128
 
 # clean up dir
 def cleanup():
-    bashCmd = "rm -f model.*"
-    print bashCmd
-    subprocess.call(shlex.split(bashCmd), stdout=subprocess.PIPE)
-    bashCmd = "rm -rf ./train ./test"
-    subprocess.call(shlex.split(bashCmd), stdout=subprocess.PIPE)
-    print bashCmd
+    files = glob.glob("model"+"*")
+    for f in files:
+        os.remove(f)
+    shutil.rmtree('./train')
+    shutil.rmtree('./test')
 
 def generate_batch(dataset_images,dataset_labels):
     # Inputs:
