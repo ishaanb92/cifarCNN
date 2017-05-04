@@ -20,6 +20,7 @@ def bias_initialize(shape,name):
 def inference(image):
     # Re-shape the images
     image_reshape = tf.reshape(image,[-1,32,32,3])
+    tf.summary.image('Images',image_reshape) # Adding visualization for image
     # 1st convolutional layer
     Wconv1 = weights_initialize([5,5,3,64],5e-2,"Wconv1")
     bconv1 = bias_initialize([64],"bconv1")
