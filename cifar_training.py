@@ -14,8 +14,10 @@ def cleanup():
     files = glob.glob("model"+"*")
     for f in files:
         os.remove(f)
-    shutil.rmtree('./train')
-    shutil.rmtree('./test')
+    if os.path.isdir(os.path.join(os.getcwd(),'train')):
+        shutil.rmtree('./train')
+    if os.path.isdir(os.path.join(os.getcwd(),'test')):
+        shutil.rmtree('./test')
 
 def generate_batch(dataset_images,dataset_labels):
     # Inputs:
@@ -74,13 +76,13 @@ def run_training():
     with tf.Graph().as_default():
 
         cifar_dataset = data_helpers.load_data() # Loads training images/label + test images/label
-        image = tf.placeholder(tf.float32,[None,3072])
-        label = tf.placeholder(tf.int64,[None])
+        image = tf.placeholder(tf.float32,[BATCH_SIZE,3072])
+        label = tf.placeholder(tf.int64,[BATCH_SIZE])
 
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Construct the graph
-        out,regularizer = cifar.inference(image)
+        out,regularizer = cifar.inference(image,training = True)
 
         # Add op for loss
         loss = cifar.loss(out,regularizer,label)

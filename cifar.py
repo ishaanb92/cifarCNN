@@ -4,8 +4,9 @@ import tensorflow as tf
 # Some defines
 NUM_EPOCHS_PER_DECAY = 50.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.01
-BATCH_SIZE = 128
+INITIAL_LEARNING_RATE = 0.025
+TRAINING_BATCH_SIZE = 128
+TEST_BATCH_SIZE = 10000
 
 #Helper functions
 def weights_initialize(shape,dev,name):
@@ -17,9 +18,12 @@ def bias_initialize(shape,name):
     return tf.Variable(initial, name = name)
 
 # Construct the CNN architecture
-def inference(image):
+def inference(image,training = True):
     # Re-shape the images
-    image_reshape = tf.reshape(image,[-1,32,32,3])
+    if training:
+        image_reshape = tf.reshape(image,[TRAINING_BATCH_SIZE,32,32,3])
+    else:
+        image_reshape = tf.reshape(image,[TEST_BATCH_SIZE,32,32,3])
     tf.summary.image('Images',image_reshape) # Adding visualization for image
     # 1st convolutional layer
     Wconv1 = weights_initialize([5,5,3,64],5e-2,"Wconv1")
@@ -73,8 +77,9 @@ def loss(out,regularizer,labels):
 
 # Training step computation
 def create_train_step(loss,global_step,num_examples):
-    num_batches_per_epoch = num_examples/BATCH_SIZE
+    num_batches_per_epoch = num_examples/TRAINING_BATCH_SIZE
     learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
+    tf.summary.scalar('Learning Rate',learning_rate)
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
     return train_step
 

@@ -5,7 +5,7 @@ import cifar
 import os
 import sys
 
-BATCH_SIZE = 10000
+TEST_BATCH_SIZE = 10000
 
 def run_test():
     with tf.Graph().as_default():
@@ -15,10 +15,10 @@ def run_test():
         test_labels = cifar10_data['labels_test']
 
         # Create placeholders
-        images = tf.placeholder(tf.float32,[None,3072])
-        labels = tf.placeholder(tf.int64,[None])
+        images = tf.placeholder(tf.float32,[TEST_BATCH_SIZE,3072])
+        labels = tf.placeholder(tf.int64,[TEST_BATCH_SIZE])
         # Create op to compute output of network
-        out,regularizer = cifar.inference(images)
+        out,regularizer = cifar.inference(images,training = False)
         result = cifar.evaluate(out,labels)
 
         # Load saved data
