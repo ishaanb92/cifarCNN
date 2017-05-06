@@ -4,7 +4,7 @@ import tensorflow as tf
 # Some defines
 NUM_EPOCHS_PER_DECAY = 50.0
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.025
+INITIAL_LEARNING_RATE = 0.01
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
 
@@ -54,19 +54,25 @@ def inference(image,training = True):
     b_fc1 = bias_initialize([384],"b_fc1");
     pool2_flat = tf.reshape(pool2,[-1,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     fc_1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)
+    # Dropout
+    keep_prob_fc1 = tf.placeholder(tf.float32)
+    fc_1_drop = tf.nn.dropout(fc_1,keep_prob_fc1)
 
     # FC 2 Layer
     W_fc2 = weights_initialize([384,192],0.004,"W_fc2") # Shape taken from original CIFAR classifier
     b_fc2 = bias_initialize([192],"b_fc2");
-    fc_2 = tf.nn.relu(tf.matmul(fc_1, W_fc2) + b_fc2)
+    fc_2 = tf.nn.relu(tf.matmul(fc_1_drop, W_fc2) + b_fc2)
+    #Dropout
+    keep_prob_fc2 = tf.placeholder(tf.float32)
+    fc_2_drop = tf.nn.dropout(fc_2,keep_prob_fc2)
 
     # Output Layer
     W_out = weights_initialize([192,10],1/192.0,"W_out")
     b_out = bias_initialize([10],"b_out")
     # Not applied the non-linearity yet for the output. Softmax to model "inhibition", suppresses multiple activations
-    out = tf.add(tf.matmul(fc_2, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
+    out = tf.add(tf.matmul(fc_2_drop, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
     regularizer = tf.nn.l2_loss(W_fc2) + tf.nn.l2_loss(W_fc1) + tf.nn.l2_loss(Wconv2) + tf.nn.l2_loss(Wconv1)
-    return out,regularizer
+    return out,regularizer,keep_prob_fc1,keep_prob_fc2
 
 # Cost Model
 def loss(out,regularizer,labels):
