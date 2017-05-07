@@ -56,7 +56,7 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch
     true_count = 0
     current_count = 0
 
-    num_examples = dataset_images.shape[0]
+    num_examples = steps_per_epoch*BATCH_SIZE
 
     for x in range(steps_per_epoch):
         # Generate batch

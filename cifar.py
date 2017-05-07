@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 # Some defines
-NUM_EPOCHS_PER_DECAY = 50.0
-LEARNING_RATE_DECAY_FACTOR = 0.1
+NUM_EPOCHS_PER_DECAY = 100
+LEARNING_RATE_DECAY_FACTOR = 0.5
 INITIAL_LEARNING_RATE = 0.01
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
@@ -24,7 +24,9 @@ def inference(image,training = True):
         image_reshape = tf.reshape(image,[TRAINING_BATCH_SIZE,32,32,3])
     else:
         image_reshape = tf.reshape(image,[TEST_BATCH_SIZE,32,32,3])
-    tf.summary.image('Images',image_reshape) # Adding visualization for image
+
+   # tf.summary.image('Images',image_reshape) # Adding visualization for image
+
     # 1st convolutional layer
     Wconv1 = weights_initialize([5,5,3,64],5e-2,"Wconv1")
     bconv1 = bias_initialize([64],"bconv1")
@@ -52,7 +54,10 @@ def inference(image,training = True):
     # FC 1  Layer
     W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,"W_fc1") # 384 taken from original CIFAR classifier
     b_fc1 = bias_initialize([384],"b_fc1");
-    pool2_flat = tf.reshape(pool2,[-1,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
+    if training:
+        pool2_flat = tf.reshape(pool2,[TRAINING_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
+    else:
+        pool2_flat = tf.reshape(pool2,[TEST_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     fc_1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)
     # Dropout
     keep_prob_fc1 = tf.placeholder(tf.float32)
