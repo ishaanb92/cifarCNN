@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 
 # Some defines
-NUM_EPOCHS_PER_DECAY = 50.0
-LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.025
+NUM_EPOCHS_PER_DECAY = 100.0
+LEARNING_RATE_DECAY_FACTOR = 0.5
+INITIAL_LEARNING_RATE = 0.01
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
 
@@ -52,7 +52,10 @@ def inference(image,training = True):
     # FC 1  Layer
     W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,"W_fc1") # 384 taken from original CIFAR classifier
     b_fc1 = bias_initialize([384],"b_fc1");
-    pool2_flat = tf.reshape(pool2,[-1,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
+    if training:
+        pool2_flat = tf.reshape(pool2,[TRAINING_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
+    else:
+        pool2_flat = tf.reshape(pool2,[TEST_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     fc_1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)
 
     # FC 2 Layer
