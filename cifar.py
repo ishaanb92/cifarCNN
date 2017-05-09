@@ -50,16 +50,21 @@ def inference(image,training = True):
 
     # Pooling
     pool2 = tf.nn.max_pool(norm2,ksize = [1,3,3,1], strides = [1,2,2,1], padding= 'SAME')
-
-    # FC 1  Layer
-    W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,"W_fc1") # 384 taken from original CIFAR classifier
-    b_fc1 = bias_initialize([384],"b_fc1");
+   # Flatten output of pool2
     if training:
         pool2_flat = tf.reshape(pool2,[TRAINING_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     else:
         pool2_flat = tf.reshape(pool2,[TEST_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
-    fc_1 = tf.nn.relu(tf.matmul(pool2_flat, W_fc1) + b_fc1)
-    # Dropout
+    # FC 1  Layer
+    W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,"W_fc1") # 384 taken from original CIFAR classifier
+    b_fc1 = bias_initialize([384],"b_fc1");
+    # Dropout for flattened pool2 layer
+    keep_prob_pool2 = tf.placeholder(tf.float32)
+    pool2_flat_drop = tf.nn.dropout(pool2_flat,keep_prob_pool2)
+
+    fc_1 = tf.nn.relu(tf.matmul(pool2_flat_drop, W_fc1) + b_fc1)
+
+    #Dropout for output of FC1 layer
     keep_prob_fc1 = tf.placeholder(tf.float32)
     fc_1_drop = tf.nn.dropout(fc_1,keep_prob_fc1)
 
@@ -67,17 +72,14 @@ def inference(image,training = True):
     W_fc2 = weights_initialize([384,192],0.004,"W_fc2") # Shape taken from original CIFAR classifier
     b_fc2 = bias_initialize([192],"b_fc2");
     fc_2 = tf.nn.relu(tf.matmul(fc_1_drop, W_fc2) + b_fc2)
-    #Dropout
-    keep_prob_fc2 = tf.placeholder(tf.float32)
-    fc_2_drop = tf.nn.dropout(fc_2,keep_prob_fc2)
 
     # Output Layer
     W_out = weights_initialize([192,10],1/192.0,"W_out")
     b_out = bias_initialize([10],"b_out")
     # Not applied the non-linearity yet for the output. Softmax to model "inhibition", suppresses multiple activations
-    out = tf.add(tf.matmul(fc_2_drop, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
+    out = tf.add(tf.matmul(fc_2, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
     regularizer = tf.nn.l2_loss(W_fc2) + tf.nn.l2_loss(W_fc1) + tf.nn.l2_loss(Wconv2) + tf.nn.l2_loss(Wconv1)
-    return out,regularizer,keep_prob_fc1,keep_prob_fc2
+    return out,regularizer,keep_prob_pool2,keep_prob_fc1
 
 # Cost Model
 def loss(out,regularizer,labels):

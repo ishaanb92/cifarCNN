@@ -18,7 +18,7 @@ def run_test():
         images = tf.placeholder(tf.float32,[TEST_BATCH_SIZE,3072])
         labels = tf.placeholder(tf.int64,[TEST_BATCH_SIZE])
         # Create op to compute output of network
-        out,regularizer,keep_prob_fc1,keep_prob_fc2 = cifar.inference(images,training = False)
+        out,regularizer,keep_prob_pool2,keep_prob_fc1 = cifar.inference(images,training = False)
         result = cifar.evaluate(out,labels)
 
         # Load saved data
@@ -31,7 +31,7 @@ def run_test():
         else:
             print "Could not load saved data \n"
             sys.exit()
-        test_accuracy = sess.run(result,feed_dict = {images:test_images,labels:test_labels,keep_prob_fc1 : 1.0,keep_prob_fc2 : 1.0})
+        test_accuracy = sess.run(result,feed_dict = {images:test_images,labels:test_labels,keep_prob_pool2 : 1.0,keep_prob_fc1 : 1.0})
         print 'Test accuracy for CIFAR-10 is %.04f'%(test_accuracy)
 
 def main(_):
