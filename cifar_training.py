@@ -6,7 +6,7 @@ import os
 import glob
 import shutil
 
-MAX_STEPS = 250*1000
+MAX_STEPS = 500*1000
 BATCH_SIZE = 128
 
 # clean up dir
