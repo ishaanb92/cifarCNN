@@ -4,7 +4,7 @@ import tensorflow as tf
 # Some defines
 NUM_EPOCHS_PER_DECAY = 100
 LEARNING_RATE_DECAY_FACTOR = 0.5
-INITIAL_LEARNING_RATE = 0.01
+INITIAL_LEARNING_RATE = 0.001
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
 
@@ -40,7 +40,7 @@ def inference(image,training = True):
     norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 
     # 2nd convolutional layer
-    Wconv2 = weights_initialize([5,5,64,64],0.1,"Wconv2")
+    Wconv2 = weights_initialize([5,5,64,64],5e-2,"Wconv2")
     bconv2 = bias_initialize([64],"bconv2")
     conv2 = tf.nn.conv2d(norm1,Wconv2,[1,1,1,1],padding = 'SAME')
     layer_2 = tf.nn.relu(tf.nn.bias_add(conv2,bconv2))
@@ -90,10 +90,7 @@ def loss(out,regularizer,labels):
 
 # Training step computation
 def create_train_step(loss,global_step,num_examples):
-    num_batches_per_epoch = num_examples/TRAINING_BATCH_SIZE
-    learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
-    tf.summary.scalar('Learning Rate',learning_rate)
-    train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
+    train_step = tf.train.AdamOptimizer(learning_rate=INITIAL_LEARNING_RATE).minimize(loss,global_step = global_step)
     return train_step
 
 def evaluate(out,labels):
