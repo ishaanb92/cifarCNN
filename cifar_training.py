@@ -6,7 +6,7 @@ import os
 import glob
 import shutil
 
-MAX_STEPS = 125*1000
+MAX_STEPS = 500*1000
 BATCH_SIZE = 128
 
 # clean up dir
@@ -30,7 +30,7 @@ def generate_batch(dataset_images,dataset_labels):
     label_batch = dataset_labels[batch]
     return images_batch,label_batch
 
-def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch,summary_writer,merged,current_epoch,keep_prob_pool2,keep_prob_fc1,training):
+def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch,summary_writer,merged,current_epoch,keep_prob_pool2,keep_prob_fc1,keep_prob_fc2,training):
     # Inputs:
         # sess : Current session
         # accuracy : op defined for computing the accuracy
@@ -43,6 +43,7 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch
         # current_epoch : Epoch at which the "summary" is recorded
         # keep_prob_pool2 : Dropout parameter for the first fully connected layer
         # keep_prob_fc1 : Dropout parameter for the second fully connected layer
+        # keep_prob_fc2 : Dropout parameter for the fully connected layer before the readout (output) layer
         # training : Flag, True when evaluating training examples
     # Returns:
         # prediction : fraction of correctly predicated labels
@@ -62,9 +63,9 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch
         # Generate batch
         images_batch,label_batch = generate_batch(dataset_images,dataset_labels)
         if training:
-            summary,current_count = sess.run([merged,accuracy],feed_dict = {image_pl: images_batch,label_pl:label_batch,keep_prob_pool2 : 0.5,keep_prob_fc1 : 0.5 })
+            summary,current_count = sess.run([merged,accuracy],feed_dict = {image_pl: images_batch,label_pl:label_batch,keep_prob_pool2 : 0.5,keep_prob_fc1 : 0.5 ,keep_prob_fc2 : 0.5})
         else:
-            summary,current_count = sess.run([merged,accuracy],feed_dict = {image_pl: images_batch,label_pl:label_batch,keep_prob_pool2 : 1.0,keep_prob_fc1 : 1.0})
+            summary,current_count = sess.run([merged,accuracy],feed_dict = {image_pl: images_batch,label_pl:label_batch,keep_prob_pool2 : 1.0,keep_prob_fc1 : 1.0,keep_prob_fc2 : 1.0})
         true_count += current_count # Accumulate number of correct preds per batch
     prediction = (float(true_count)/steps_per_epoch) # Avg fraction of correct images after one epoch of eval
     # Write summary to visualization file
@@ -87,7 +88,7 @@ def run_training():
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Construct the graph
-        out,regularizer,keep_prob_pool2,keep_prob_fc1 = cifar.inference(image,training = True)
+        out,regularizer,keep_prob_pool2,keep_prob_fc1,keep_prob_fc2 = cifar.inference(image,training = True)
 
         # Add op for loss
         loss = cifar.loss(out,regularizer,label)
@@ -122,14 +123,14 @@ def run_training():
             for j in range(steps_per_epoch_train):
                 images_batch,label_batch = generate_batch(cifar_dataset['images_train'],cifar_dataset['labels_train'])
                 # Execute the train step
-                summary,_ = sess.run([merged,train_step],feed_dict = {image:images_batch,label:label_batch,keep_prob_pool2 : 0.5,keep_prob_fc1 : 0.5})
+                summary,_ = sess.run([merged,train_step],feed_dict = {image:images_batch,label:label_batch,keep_prob_pool2 : 0.5,keep_prob_fc1 : 0.5, keep_prob_fc2 : 0.5})
             if i%10 == 0 :
                 # Record current training loss
                 train_writer.add_summary(summary,i)
             # Check accuracy every epoch
-            train_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_train,train_writer,merged,i,keep_prob_pool2,keep_prob_fc1,training = True) #evaluate model with training data
+            train_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_train,train_writer,merged,i,keep_prob_pool2,keep_prob_fc1,keep_prob_fc2,training = True) #evaluate model with training data
             print('Epoch '+str(i)+' training accuracy: '+str(train_accuracy))
-            test_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_test,test_writer,merged,i,keep_prob_pool2,keep_prob_fc1,training = False) #evaluate model with test data
+            test_accuracy = evaluate_batch(sess,accuracy,cifar_dataset,image,label,steps_per_epoch_test,test_writer,merged,i,keep_prob_pool2,keep_prob_fc1,keep_prob_fc2,training = False) #evaluate model with test data
             print('Epoch '+str(i)+' test accuracy: '+str(test_accuracy))
 
         # Now that training is complete, save the checkpoint file

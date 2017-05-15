@@ -73,13 +73,17 @@ def inference(image,training = True):
     b_fc2 = bias_initialize([192],"b_fc2");
     fc_2 = tf.nn.relu(tf.matmul(fc_1_drop, W_fc2) + b_fc2)
 
+    #Dropout for output of FC2 layer
+    keep_prob_fc2 = tf.placeholder(tf.float32)
+    fc_2_drop = tf.nn.dropout(fc_2,keep_prob_fc2)
+
     # Output Layer
     W_out = weights_initialize([192,10],1/192.0,"W_out")
     b_out = bias_initialize([10],"b_out")
     # Not applied the non-linearity yet for the output. Softmax to model "inhibition", suppresses multiple activations
-    out = tf.add(tf.matmul(fc_2, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
+    out = tf.add(tf.matmul(fc_2_drop, W_out),b_out) # Output is a 1-D vector with 10 elements ( = #classes)
     regularizer = tf.nn.l2_loss(W_fc2) + tf.nn.l2_loss(W_fc1) + tf.nn.l2_loss(Wconv2) + tf.nn.l2_loss(Wconv1)
-    return out,regularizer,keep_prob_pool2,keep_prob_fc1
+    return out,regularizer,keep_prob_pool2,keep_prob_fc1,keep_prob_fc2
 
 # Cost Model
 def loss(out,regularizer,labels):
