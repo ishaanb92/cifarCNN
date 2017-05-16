@@ -31,7 +31,7 @@ def run_test():
         else:
             print "Could not load saved data \n"
             sys.exit()
-        test_accuracy = sess.run(result,feed_dict = {images:test_images,labels:test_labels,keep_prob_pool2 : 1.0,keep_prob_fc1 : 1.0})
+        test_accuracy = sess.run(result,feed_dict = {images:test_images,labels:test_labels,keep_prob_pool2 : 1.0,keep_prob_fc1 : 1.0,keep_prob_fc2 : 1.0})
         print 'Test accuracy for CIFAR-10 is %.04f'%(test_accuracy)
 
 def main(_):

@@ -88,6 +88,7 @@ def inference(image,training = True):
 # Cost Model
 def loss(out,regularizer,labels):
     lmbda = tf.constant(0.1) # Determines rate of weight decay
+    # "sparse_softmax" requires the label to be an integer rather than a vector (one-hot)
     loss = tf.reduce_mean( tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=out) + lmbda*regularizer)
     tf.summary.scalar('Loss',loss)
     return loss
