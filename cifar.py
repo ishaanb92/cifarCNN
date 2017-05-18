@@ -90,7 +90,7 @@ def loss(out,regularizer,labels):
 
 # Training step computation
 def create_train_step(loss,global_step,num_examples):
-    train_step = tf.train.AdamOptimizer(learning_rate=INITIAL_LEARNING_RATE).minimize(loss,global_step = global_step)
+    train_step = tf.train.RMSPropOptimizer(learning_rate=INITIAL_LEARNING_RATE).minimize(loss,global_step = global_step)
     return train_step
 
 def evaluate(out,labels):
