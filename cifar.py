@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 # Some defines
-NUM_EPOCHS_PER_DECAY = 100.0
-LEARNING_RATE_DECAY_FACTOR = 0.5
+NUM_EPOCHS_PER_DECAY = 350.0
+LEARNING_RATE_DECAY_FACTOR = 0.1
 INITIAL_LEARNING_RATE = 0.01
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
@@ -44,7 +44,7 @@ def distort_image(image):
 def crop_test_image(image):
     height = IMAGE_SIZE
     width = IMAGE_SIZE
-    image_list = tf.unpack(image,axis=0)
+    image_list = tf.unstack(image,axis=0)
     for img in image_list:
         img = tf.image.resize_image_with_crop_or_pad(img,height,width)
         img = tf.image.per_image_standardization(img)
@@ -131,14 +131,14 @@ def create_train_step(loss,global_step,num_examples):
     # Create op for maintaining moving average of weights and biases (trainable variables)
     variable_averages = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGES_DECAY)
     variable_averages_op = variable_averages.apply(tf.trainable_variables())
-
+    variables_to_restore = variable_averages.variables_to_restore() # Get the mapping of variables needed to be restored
     # Define the minimization step
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
 
     # Defining the train_op
     with tf.control_dependencies([train_step,variable_averages_op]):
         train_op = tf.no_op(name = 'train')
-    return train_op
+    return train_op,variables_to_restore
 
 def evaluate(out,labels):
     correct_prediction = tf.nn.in_top_k(out,labels,1)

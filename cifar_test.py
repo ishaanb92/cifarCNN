@@ -22,7 +22,7 @@ def run_test():
         result = cifar.evaluate(out,labels)
 
         # Get moving averages
-        variable_averages = tf.train.ExponentialMovingAverage(cifar10.MOVING_AVERAGES_DECAY)
+        variable_averages = tf.train.ExponentialMovingAverage(cifar.MOVING_AVERAGES_DECAY)
         variables_to_restore = variable_averages.variables_to_restore()
         # Load saved data
         loader = tf.train.Saver(variables_to_restore)

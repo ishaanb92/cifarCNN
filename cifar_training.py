@@ -88,7 +88,7 @@ def run_training():
         loss = cifar.loss(out,regularizer,label)
 
         # Add op for optimization for each training step
-        train_step = cifar.create_train_step(loss,global_step,cifar_dataset['images_train'].shape[0])
+        train_step,variables_to_restore = cifar.create_train_step(loss,global_step,cifar_dataset['images_train'].shape[0])
 
         # Add op for evaluating training accuracy
         accuracy = cifar.evaluate(out,label)
@@ -96,8 +96,8 @@ def run_training():
         # Now that all the ops are defined, run the training
         init = tf.global_variables_initializer()
 
-        # Create a "saver" to save weights and biases
-        saver = tf.train.Saver(tf.trainable_variables())
+        # Create a "saver" to save running avg of weights and biases
+        saver = tf.train.Saver(variables_to_restore)
 
         # Create session
         sess = tf.Session()
