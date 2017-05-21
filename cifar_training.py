@@ -97,7 +97,7 @@ def run_training():
         init = tf.global_variables_initializer()
 
         # Create a "saver" to save weights and biases
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(tf.trainable_variables())
 
         # Create session
         sess = tf.Session()
