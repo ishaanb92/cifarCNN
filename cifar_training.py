@@ -7,7 +7,6 @@ import glob
 import shutil
 
 MAX_STEPS = 250*1000
-BATCH_SIZE = 128
 
 # clean up dir
 def cleanup():
@@ -25,7 +24,7 @@ def generate_batch(dataset_images,dataset_labels):
         # dataset_labels : Entire label collection from train/test
     # Returns:
         # Image and Label  array built from random indices from provided dataset
-    batch = np.random.choice(dataset_images.shape[0], BATCH_SIZE)
+    batch = np.random.choice(dataset_images.shape[0], cifar.TRAINING_BATCH_SIZE)
     images_batch = dataset_images[batch]
     label_batch = dataset_labels[batch]
     return images_batch,label_batch
@@ -65,9 +64,9 @@ def evaluate_batch(sess,accuracy,cifar_dataset,image_pl,label_pl,steps_per_epoch
     # Write summary to visualization file
     summary_writer.add_summary(summary,current_epoch)
     if training:
-        print 'TRAINING EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*BATCH_SIZE,prediction)
+        print 'TRAINING EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*cifar.TRAINING_BATCH_SIZE,prediction)
     else:
-        print 'TEST EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*BATCH_SIZE,prediction)
+        print 'TEST EXAMPLES:: Num exaples = %d True count = %d Precision = %.04f'%(num_examples,true_count*cifar.TRAINING_BATCH_SIZE,prediction)
     return prediction
 
 # Top level training function
@@ -76,8 +75,8 @@ def run_training():
     with tf.Graph().as_default():
 
         cifar_dataset = data_helpers.load_data() # Loads training images/label + test images/label
-        image = tf.placeholder(tf.float32,[BATCH_SIZE,3072])
-        label = tf.placeholder(tf.int64,[BATCH_SIZE])
+        image = tf.placeholder(tf.float32,[cifar.TRAINING_BATCH_SIZE,3072])
+        label = tf.placeholder(tf.int64,[cifar.TRAINING_BATCH_SIZE])
 
         global_step = tf.contrib.framework.get_or_create_global_step()
 
@@ -88,7 +87,7 @@ def run_training():
         loss = cifar.loss(out,regularizer,label)
 
         # Add op for optimization for each training step
-        train_step,variables_to_restore = cifar.create_train_step(loss,global_step,cifar_dataset['images_train'].shape[0])
+        train_step,variables_to_restore = cifar.create_train_step(loss,global_step)
 
         # Add op for evaluating training accuracy
         accuracy = cifar.evaluate(out,label)
@@ -108,8 +107,8 @@ def run_training():
         train_writer = tf.summary.FileWriter(os.getcwd() + '/train',sess.graph)
         test_writer = tf.summary.FileWriter(os.getcwd() + '/test',sess.graph)
 
-        steps_per_epoch_train = cifar_dataset['images_train'].shape[0]/BATCH_SIZE # Train ops run per training epoch
-        steps_per_epoch_test = cifar_dataset['images_test'].shape[0]/BATCH_SIZE # Number of evaluations per epoch for test examples
+        steps_per_epoch_train = cifar_dataset['images_train'].shape[0]/cifar.TRAINING_BATCH_SIZE # Train ops run per training epoch
+        steps_per_epoch_test = cifar_dataset['images_test'].shape[0]/cifar.TRAINING_BATCH_SIZE # Number of evaluations per epoch for test examples
         num_epochs = MAX_STEPS/steps_per_epoch_train # Number of training epochs
 
         for i in range(num_epochs):

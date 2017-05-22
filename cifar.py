@@ -2,13 +2,14 @@ import numpy as np
 import tensorflow as tf
 
 # Some defines
-NUM_EPOCHS_PER_DECAY = 350.0
-LEARNING_RATE_DECAY_FACTOR = 0.1
+NUM_EPOCHS_PER_DECAY = 100.0
+LEARNING_RATE_DECAY_FACTOR = 0.5
 INITIAL_LEARNING_RATE = 0.01
 TRAINING_BATCH_SIZE = 128
 TEST_BATCH_SIZE = 10000
 MOVING_AVERAGES_DECAY = 0.9999
 IMAGE_SIZE = 24
+NUM_TRAINING_EXAMPLES = 50000
 
 #Helper functions
 def weights_initialize(shape,dev,name):
@@ -52,7 +53,7 @@ def crop_test_image(image):
     cropped_image = tf.stack(image_list,axis=0)
     return cropped_image
 
-def inference(image,training = True):
+def inference(image,training):
     # Re-shape the images
     if training:
         image_reshape = tf.reshape(image,[TRAINING_BATCH_SIZE,32,32,3])
@@ -124,8 +125,8 @@ def loss(out,regularizer,labels):
     return loss
 
 # Training step computation
-def create_train_step(loss,global_step,num_examples):
-    num_batches_per_epoch = num_examples/TRAINING_BATCH_SIZE
+def create_train_step(loss,global_step):
+    num_batches_per_epoch = NUM_TRAINING_EXAMPLES/TRAINING_BATCH_SIZE
     learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
     tf.summary.scalar('Learning Rate',learning_rate)
     # Create op for maintaining moving average of weights and biases (trainable variables)
