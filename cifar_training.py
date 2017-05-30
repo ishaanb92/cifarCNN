@@ -5,6 +5,8 @@ import cifar10_input # Contains functions to read CIFAR-10 bin files
 import glob
 import shutil
 import os
+import time
+from datetime import datetime
 
 MAX_STEPS = 250*1000
 
@@ -22,7 +24,6 @@ def cleanup():
 def run_training():
 
     with tf.Graph().as_default():
-
 
         # Generate a batch
         image, label = cifar.distorted_inputs()
@@ -51,30 +52,46 @@ def run_training():
         sess = tf.Session()
         sess.run(init)
 
-        # Handling visualizations
-        merged = tf.summary.merge_all()
-        train_writer = tf.summary.FileWriter(os.getcwd() + '/train',sess.graph)
-        test_writer = tf.summary.FileWriter(os.getcwd() + '/test',sess.graph)
+        class _LoggerHook(tf.train.SessionRunHook):
+          """Logs loss and runtime."""
 
-        steps_per_epoch_train = cifar.NUM_TRAINING_EXAMPLES/cifar.TRAINING_BATCH_SIZE # Train ops run per training epoch
-        steps_per_epoch_test = cifar.NUM_TEST_EXAMPLES/cifar.TRAINING_BATCH_SIZE # Number of evaluations per epoch for test examples
-        num_epochs = MAX_STEPS/steps_per_epoch_train # Number of training epochs
+          def begin(self):
+            self._step = -1
+            self._start_time = time.time()
 
-        for i in range(num_epochs):
-            # Generate batch
-            for j in range(steps_per_epoch_train):
-                # Execute the train step
-                summary,_ = sess.run([merged,train_step]) # The model "experiences" a new batch every step in an epoch
-            # Record current training loss every epoch
-            train_accuracy = sess.run([accuracy])
-            train_writer.add_summary(summary,i)
-            print('Epoch '+str(i)+' training accuracy: '+str(train_accuracy))
+          def before_run(self, run_context):
+            self._step += 1
+            return tf.train.SessionRunArgs(accuracy)  # Asks for loss value.
+
+          def after_run(self, run_context, run_values):
+            if self._step % 10 == 0:
+              current_time = time.time()
+              duration = current_time - self._start_time
+              self._start_time = current_time
+
+              accuracy_value = run_values.results
+              examples_per_sec = 10 * cifar.TRAINING_BATCH_SIZE / duration
+              sec_per_batch = float(duration / 10)
+
+              format_str = ('%s: step %d, accuracy = %.2f (%.1f examples/sec; %.3f '
+                            'sec/batch)')
+              print (format_str % (datetime.now(), self._step, accuracy_value,
+                                   examples_per_sec, sec_per_batch))
+
+        with tf.train.MonitoredTrainingSession(
+            checkpoint_dir= os.path.join(os.getcwd(),'train'),
+            hooks=[tf.train.StopAtStepHook(last_step=MAX_STEPS),
+                   tf.train.NanTensorHook(loss),
+                   _LoggerHook()],
+            config=tf.ConfigProto(
+                log_device_placement=False)) as mon_sess:
+          while not mon_sess.should_stop():
+            mon_sess.run(train_step)
+
 
         # Now that training is complete, save the checkpoint file
         file_path = os.path.join(os.getcwd(),"model.cpkt")
         saver.save(sess,file_path,global_step = i)
-
-
 
 def main(_):
     cleanup()

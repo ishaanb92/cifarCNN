@@ -6,7 +6,7 @@ import os
 # Some defines
 NUM_EPOCHS_PER_DECAY = 100.0
 LEARNING_RATE_DECAY_FACTOR = 0.5
-INITIAL_LEARNING_RATE = 0.01
+INITIAL_LEARNING_RATE = 0.1
 TRAINING_BATCH_SIZE = 128
 NUM_TEST_EXAMPLES = 10000
 MOVING_AVERAGES_DECAY = 0.9999
@@ -106,7 +106,6 @@ def create_train_step(loss,global_step):
     variables_to_restore = variable_averages.variables_to_restore() # Get the mapping of variables needed to be restored
     # Define the minimization step
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
-
     # Defining the train_op
     with tf.control_dependencies([train_step,variable_averages_op]):
         train_op = tf.no_op(name = 'train')
