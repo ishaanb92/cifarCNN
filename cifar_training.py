@@ -65,11 +65,10 @@ def run_training():
             for j in range(steps_per_epoch_train):
                 # Execute the train step
                 summary,_ = sess.run([merged,train_step]) # The model "experiences" a new batch every step in an epoch
-            if i%10 == 0 :
-                # Record current training loss
-                train_accuracy = sess.run([accuracy])
-                train_writer.add_summary(summary,i)
-                print('Epoch '+str(i)+' training accuracy: '+str(train_accuracy))
+            # Record current training loss every epoch
+            train_accuracy = sess.run([accuracy])
+            train_writer.add_summary(summary,i)
+            print('Epoch '+str(i)+' training accuracy: '+str(train_accuracy))
 
         # Now that training is complete, save the checkpoint file
         file_path = os.path.join(os.getcwd(),"model.cpkt")
