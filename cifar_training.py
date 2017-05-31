@@ -8,7 +8,7 @@ import os
 import time
 from datetime import datetime
 
-MAX_STEPS = 250*1000
+MAX_STEPS = 1000000
 
 # clean up dir
 def cleanup():
@@ -52,6 +52,7 @@ def run_training():
         sess = tf.Session()
         sess.run(init)
 
+        # Used to run the train_op
         class _LoggerHook(tf.train.SessionRunHook):
           """Logs loss and runtime."""
 
