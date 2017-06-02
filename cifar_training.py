@@ -31,10 +31,10 @@ def run_training():
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Construct the graph
-        out,regularizer = cifar.inference(image,training = True)
+        out = cifar.inference(image,training = True)
 
         # Add op for loss
-        loss = cifar.loss(out,regularizer,label)
+        loss = cifar.loss(out,label)
 
         # Add op for optimization for each training step
         train_step,variables_to_restore = cifar.create_train_step(loss,global_step)
@@ -92,7 +92,7 @@ def run_training():
 
         # Now that training is complete, save the checkpoint file
         file_path = os.path.join(os.getcwd(),"model.cpkt")
-        saver.save(sess,file_path,global_step = i)
+        saver.save(sess,file_path,global_step = global_step)
 
 def main(_):
     cleanup()
