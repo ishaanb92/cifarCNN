@@ -8,7 +8,7 @@ import os
 import time
 from datetime import datetime
 
-MAX_STEPS = 1000000
+MAX_STEPS = 1000*1000
 
 # clean up dir
 def cleanup():
@@ -31,7 +31,7 @@ def run_training():
         global_step = tf.contrib.framework.get_or_create_global_step()
 
         # Construct the graph
-        out = cifar.inference(image,training = True)
+        out = cifar.inference(image)
 
         # Add op for loss
         loss = cifar.loss(out,label)
@@ -46,7 +46,7 @@ def run_training():
         init = tf.global_variables_initializer()
 
         # Create a "saver" to save running avg of weights and biases
-        saver = tf.train.Saver(variables_to_restore)
+        #saver = tf.train.Saver(variables_to_restore)
 
         # Create session
         sess = tf.Session()
@@ -91,8 +91,8 @@ def run_training():
 
 
         # Now that training is complete, save the checkpoint file
-        file_path = os.path.join(os.getcwd(),"model.cpkt")
-        saver.save(sess,file_path,global_step = global_step)
+        #file_path = os.path.join(os.getcwd(),"model.cpkt")
+        #saver.save(sess,file_path,global_step = global_step)
 
 def main(_):
     cleanup()
