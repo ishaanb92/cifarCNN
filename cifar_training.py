@@ -45,9 +45,6 @@ def run_training():
         # Now that all the ops are defined, run the training
         init = tf.global_variables_initializer()
 
-        # Create a "saver" to save running avg of weights and biases
-        #saver = tf.train.Saver(variables_to_restore)
-
         # Create session
         sess = tf.Session()
         sess.run(init)
@@ -89,10 +86,6 @@ def run_training():
           while not mon_sess.should_stop():
             mon_sess.run(train_step)
 
-
-        # Now that training is complete, save the checkpoint file
-        #file_path = os.path.join(os.getcwd(),"model.cpkt")
-        #saver.save(sess,file_path,global_step = global_step)
 
 def main(_):
     cleanup()
