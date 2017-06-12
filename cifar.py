@@ -49,7 +49,7 @@ def inference(image):
     conv1 = tf.nn.conv2d(image,Wconv1,[1,1,1,1],padding = 'SAME')
     # gamma : Scale parameter
     # beta : Shift parameter
-    # These trainable parameters are introduced so that the model while reducing covariate shift
+    # These trainable parameters are introduced so that the model while reducing internal covariate shift
     # does not lose it's representational power (Names are consistent with notation in the BN paper [2015])
     gamma_conv1 = tf.Variable(tf.ones([64]))
     beta_conv1 = tf.Variable(tf.zeros([64]))
