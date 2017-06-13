@@ -4,9 +4,9 @@ import cifar10_input
 import os
 
 # Some defines
-NUM_EPOCHS_PER_DECAY = 350.0
+NUM_EPOCHS_PER_DECAY = 350.0/6
 LEARNING_RATE_DECAY_FACTOR = 0.1
-INITIAL_LEARNING_RATE = 0.1
+INITIAL_LEARNING_RATE = 0.3
 TRAINING_BATCH_SIZE = 128
 NUM_TEST_EXAMPLES = 10000
 MOVING_AVERAGES_DECAY = 0.9999
@@ -62,12 +62,12 @@ def inference(image):
     pool1 = tf.nn.max_pool(layer_1,ksize = [1,3,3,1], strides = [1,2,2,1], padding = 'SAME')
 
     #Normalize
-    norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
+    #norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 
     # 2nd convolutional layer
     Wconv2 = weights_initialize([5,5,64,64],0.1,0.0,"Wconv2")
     bconv2 = bias_initialize([64],"bconv2")
-    conv2 = tf.nn.conv2d(norm1,Wconv2,[1,1,1,1],padding = 'SAME')
+    conv2 = tf.nn.conv2d(pool1,Wconv2,[1,1,1,1],padding = 'SAME')
     # Add BN here
     gamma_conv2 = tf.Variable(tf.ones([64]))
     beta_conv2 = tf.Variable(tf.zeros([64]))
@@ -77,13 +77,13 @@ def inference(image):
     layer_2 = tf.nn.relu(tf.nn.bias_add(conv2_BN,bconv2))
 
     #Normalize
-    norm2  = tf.nn.lrn(layer_2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
+    #norm2  = tf.nn.lrn(layer_2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
 
     # Pooling
-    pool2 = tf.nn.max_pool(norm2,ksize = [1,3,3,1], strides = [1,2,2,1], padding= 'SAME')
+    pool2 = tf.nn.max_pool(layer_2,ksize = [1,3,3,1], strides = [1,2,2,1], padding= 'SAME')
 
     # FC 1  Layer
-    W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,0.004,"W_fc1") # 384 taken from original CIFAR classifier
+    W_fc1 = weights_initialize([pool2.get_shape()[1].value*pool2.get_shape()[2].value*64,384],0.04,0.004/5,"W_fc1") # 384 taken from original CIFAR classifier
     b_fc1 = bias_initialize([384],"b_fc1");
     pool2_flat = tf.reshape(pool2,[TRAINING_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     pool2_mul = tf.matmul(pool2_flat, W_fc1)
@@ -95,7 +95,7 @@ def inference(image):
     fc_1 = tf.nn.relu(tf.nn.bias_add(pool2_BN,b_fc1))
 
     # FC 2 Layer
-    W_fc2 = weights_initialize([384,192],0.004,0.004,"W_fc2") # Shape taken from original CIFAR classifier
+    W_fc2 = weights_initialize([384,192],0.004,0.004/5,"W_fc2") # Shape taken from original CIFAR classifier
     b_fc2 = bias_initialize([192],"b_fc2");
     fc2_mul = tf.matmul(fc_1, W_fc2)
     # Add BN here
