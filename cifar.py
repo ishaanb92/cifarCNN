@@ -22,8 +22,8 @@ def weights_initialize(shape,dev,decay,name):
     return var
 
 def bias_initialize(shape,name):
-    initial = tf.constant(0.0,shape=shape)
-    return tf.Variable(initial, name = name)
+    var = tf.get_variable(name,shape,initializer=tf.constant_initializer(0.0))
+    return var
 
 # Input handler functions
 # Returns 4-D image tensor : [BATCH_SIZE,h,w,channels]
@@ -51,8 +51,8 @@ def inference(image):
     # beta : Shift parameter
     # These trainable parameters are introduced so that the model while reducing internal covariate shift
     # does not lose it's representational power (Names are consistent with notation in the BN paper [2015])
-    gamma_conv1 = tf.Variable(tf.ones([64]))
-    beta_conv1 = tf.Variable(tf.zeros([64]))
+    gamma_conv1 = tf.get_variable("gamma_conv1",shape=[64],initializer=tf.constant_initializer(1.0))
+    beta_conv1 = tf.get_variable("beta_conv1",shape=[64],initializer=tf.constant_initializer(0.0))
     # Apply BN
     batch_mean_conv1, batch_var_conv1 = tf.nn.moments(conv1,[0])
     conv1_BN = tf.nn.batch_normalization(conv1,batch_mean_conv1,batch_var_conv1,beta_conv1,gamma_conv1,variance_epsilon=1e-3)
@@ -69,8 +69,8 @@ def inference(image):
     bconv2 = bias_initialize([64],"bconv2")
     conv2 = tf.nn.conv2d(pool1,Wconv2,[1,1,1,1],padding = 'SAME')
     # Add BN here
-    gamma_conv2 = tf.Variable(tf.ones([64]))
-    beta_conv2 = tf.Variable(tf.zeros([64]))
+    gamma_conv2 = tf.get_variable("gamma_conv2",shape=[64],initializer=tf.constant_initializer(1.0))
+    beta_conv2 = tf.get_variable("beta_conv2",shape=[64],initializer=tf.constant_initializer(0.0))
     # Apply BN
     batch_mean_conv2, batch_var_conv2 = tf.nn.moments(conv2,[0])
     conv2_BN = tf.nn.batch_normalization(conv2,batch_mean_conv2,batch_var_conv2,beta_conv2,gamma_conv2,variance_epsilon=1e-3)
@@ -87,8 +87,8 @@ def inference(image):
     b_fc1 = bias_initialize([384],"b_fc1");
     pool2_flat = tf.reshape(pool2,[TRAINING_BATCH_SIZE,pool2.get_shape()[1].value*pool2.get_shape()[2].value*64])
     pool2_mul = tf.matmul(pool2_flat, W_fc1)
-    gamma_pool2 = tf.Variable(tf.ones([384]))
-    beta_pool2 = tf.Variable(tf.zeros([384]))
+    gamma_pool2 = tf.get_variable("gamma_pool1",shape=[384],initializer=tf.constant_initializer(1.0))
+    beta_pool2 = tf.get_variable("beta_pool2",shape=[384],initializer=tf.constant_initializer(0.0))
     # Apply BN
     batch_mean_pool2, batch_var_pool2 = tf.nn.moments(pool2_mul,[0])
     pool2_BN = tf.nn.batch_normalization(pool2_mul,batch_mean_pool2,batch_var_pool2,beta_pool2,gamma_pool2,variance_epsilon=1e-3)
@@ -99,8 +99,8 @@ def inference(image):
     b_fc2 = bias_initialize([192],"b_fc2");
     fc2_mul = tf.matmul(fc_1, W_fc2)
     # Add BN here
-    gamma_fc2 = tf.Variable(tf.ones([192]))
-    beta_fc2 = tf.Variable(tf.zeros([192]))
+    gamma_fc2 = tf.get_variable("gamma_fc2",shape=[192],initializer=tf.constant_initializer(1.0))
+    beta_fc2 = tf.get_variable("beta_fc2",shape=[192],initializer=tf.constant_initializer(0.0))
     # Apply BN
     batch_mean_fc2, batch_var_fc2 = tf.nn.moments(fc2_mul,[0])
     pool2_BN = tf.nn.batch_normalization(fc2_mul,batch_mean_fc2,batch_var_fc2,beta_fc2,gamma_fc2,variance_epsilon=1e-3)
@@ -127,20 +127,16 @@ def create_train_step(loss,global_step):
     num_batches_per_epoch = NUM_TRAINING_EXAMPLES/TRAINING_BATCH_SIZE
     learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,global_step,int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY),LEARNING_RATE_DECAY_FACTOR,staircase = True)
     tf.summary.scalar('Learning Rate',learning_rate)
-    # Create op for maintaining moving average of weights and biases (trainable variables)
-    variable_averages = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGES_DECAY)
-    variable_averages_op = variable_averages.apply(tf.trainable_variables())
-    variables_to_restore = variable_averages.variables_to_restore() # Get the mapping of variables needed to be restored
     # Define the minimization step
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step = global_step)
     # Defining the train_op
-    with tf.control_dependencies([train_step,variable_averages_op]):
+    with tf.control_dependencies([train_step]):
         train_op = tf.no_op(name = 'train')
-    return train_op,variables_to_restore
+    return train_op
 
 def evaluate(out,labels):
     correct_prediction = tf.nn.in_top_k(out,labels,1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
     tf.summary.scalar('Correct Predications',accuracy)
-    return accuracy
+    return tf.cast(correct_prediction,tf.float32)
 
