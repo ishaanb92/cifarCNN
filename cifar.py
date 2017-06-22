@@ -137,6 +137,7 @@ def create_train_step(loss,global_step):
 def evaluate(out,labels):
     correct_prediction = tf.nn.in_top_k(out,labels,1)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
-    tf.summary.scalar('Correct Predications',accuracy)
+    # Commenting this out, because cifar_training.py captures the accuracy of 1 epoch which is much smoother and a better indicator of performance
+    #tf.summary.scalar('Correct Predications',accuracy)
     return tf.cast(correct_prediction,tf.float32)
 

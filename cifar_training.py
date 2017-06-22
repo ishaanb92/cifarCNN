@@ -71,8 +71,8 @@ def run_training():
             # Placeholders for train/test precision
             summary_train_prec = tf.placeholder(tf.float32)
             summary_eval_prec  = tf.placeholder(tf.float32)
-            tf.summary.scalar('precision/train', summary_train_prec)
-            tf.summary.scalar('precision/eval', summary_eval_prec)
+            tf.summary.scalar('accuracy/train', summary_train_prec)
+            tf.summary.scalar('accuracy/eval', summary_eval_prec)
 
             # Add op for optimization for each training step
             train_step = cifar.create_train_step(loss,global_step)
