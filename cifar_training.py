@@ -98,8 +98,8 @@ def run_training():
                     # Evaluate accuracy
                     prec_train = evaluate_batch(sess,accuracy,cifar.NUM_TRAINING_EXAMPLES)
                     prec_eval  = evaluate_batch(sess,accuracy_test,cifar.NUM_TEST_EXAMPLES)
-                    print('precision train = %.3f' % (prec_train))
-                    print('precision eval  = %.3f' % (prec_eval))
+                    print('accuracy train = %.3f' % (prec_train))
+                    print('accuracy eval  = %.3f' % (prec_eval))
                 if step % 100 == 0:
                     summary_str = sess.run(summary_op, feed_dict={summary_train_prec: prec_train,summary_eval_prec:  prec_eval})
                     summary_writer.add_summary(summary_str, step)
